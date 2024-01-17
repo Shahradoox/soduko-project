@@ -1,0 +1,61 @@
+ def draw_setup_screen(self):
+        # Display setup screen with options for manual input or a random grid
+        self.screen.fill((255, 255, 255))
+        manual_text = self.font.render("M for Manual Input|R for Random Grid", True, (0, 0, 0))
+        manual_rect = manual_text.get_rect(center=(self.width // 2, self.height // 2))
+        self.screen.blit(manual_text, manual_rect)
+
+        pygame.display.flip()
+
+        waiting = True
+        while waiting:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.KEYDOWN:
+                    # Set manual_input flag based on user choice
+                    if event.key == pygame.K_m:
+                        self.manual_input = True
+                        waiting = False
+                    elif event.key == pygame.K_r:
+                        self.manual_input = False
+                        self.create_random_grid()
+                        waiting = False
+
+    def create_random_grid(self):
+        # Initialize the Sudoku board with zeros
+        for i in range(9):
+            for j in range(9):
+                self.board[i][j] = 0
+
+        # Generate a random puzzle with 20 filled cells
+        for _ in range(20):
+            row, col = random.randint(0, 8), random.randint(0, 8)
+            num = random.randint(1, 9)
+            while not self.is_valid(num, (row, col)):
+                row, col = random.randint(0, 8), random.randint(0, 8)
+                num = random.randint(1, 9)
+            self.board[row][col] = num
+
+    def draw_board(self):
+        # Draw the Sudoku board and numbers on the Pygame window
+        cell_size = self.width // 9
+
+        for i in range(9):
+            for j in range(9):
+                rect = pygame.Rect(j * cell_size, i * cell_size, cell_size, cell_size)
+
+                # Draw cell background and border
+                pygame.draw.rect(self.screen, (255, 255, 255), rect)
+                pygame.draw.rect(self.screen, (0, 0, 0), rect, 2)
+
+                # Draw number in cell if not zero
+                if self.board[i][j] != 0:
+                    num_text = self.font.render(str(self.board[i][j]), True, (0, 0, 0))
+                    num_rect = num_text.get_rect(center=rect.center)
+                    self.screen.blit(num_text, num_rect)
+
+                # Draw a yellow border around the selected cell
+                if (i, j) == self.selected:
+                    pygame.draw.rect(self.screen, (200, 200, 0), rect, 5)
